@@ -1,0 +1,24 @@
+{
+	"name": "ls_diretorio_local",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "FileServer",
+		"typeProperties": {
+			"host": "C:\\Users\\afonso.feliciano\\Downloads\\imersao-azure-datasets",
+			"userId": "afonso.feliciano",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_keyvault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "kvsenhausuariolocal"
+			}
+		},
+		"connectVia": {
+			"referenceName": "ir-selfhosted-deskafonso",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

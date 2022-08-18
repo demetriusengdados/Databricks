@@ -1,0 +1,19 @@
+{
+	"name": "ls_sqldatabase",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "Banco de dados da turma de imersão",
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_keyvault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "kvstringconnsqldatabase"
+			}
+		}
+	}
+}

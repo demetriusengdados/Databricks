@@ -1,0 +1,61 @@
+{
+	"name": "ETL_JOIN_CLIENTES_PEDIDOS",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_generico_azuresql",
+						"type": "DatasetReference"
+					},
+					"name": "TabelaVendas"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_generico_csv",
+						"type": "DatasetReference"
+					},
+					"name": "CSVClientes"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_generico_parquet_dataflow",
+						"type": "DatasetReference"
+					},
+					"name": "SaidaParquet"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_generico_azuresql",
+						"type": "DatasetReference"
+					},
+					"name": "SaidaBD"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SelectColunasVendas"
+				},
+				{
+					"name": "SelectColunasClientes"
+				},
+				{
+					"name": "JoinVendasClientes"
+				},
+				{
+					"name": "AjusteNomeCompleto"
+				},
+				{
+					"name": "TotalPedidosPorCLiente"
+				},
+				{
+					"name": "CondicaoVenda"
+				}
+			],
+			"script": "source(output(\n\t\tSalesOrderID as integer,\n\t\tRevisionNumber as integer,\n\t\tOrderDate as timestamp,\n\t\tDueDate as timestamp,\n\t\tShipDate as timestamp,\n\t\tStatus as integer,\n\t\tOnlineOrderFlag as boolean,\n\t\tSalesOrderNumber as string,\n\t\tPurchaseOrderNumber as string,\n\t\tAccountNumber as string,\n\t\tCustomerID as integer,\n\t\tShipToAddressID as integer,\n\t\tBillToAddressID as integer,\n\t\tShipMethod as string,\n\t\tCreditCardApprovalCode as string,\n\t\tSubTotal as decimal(19,4),\n\t\tTaxAmt as decimal(19,4),\n\t\tFreight as decimal(19,4),\n\t\tTotalDue as decimal(19,4),\n\t\tComment as string,\n\t\trowguid as string,\n\t\tModifiedDate as timestamp\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> TabelaVendas\nsource(output(\n\t\tCustomerID as short,\n\t\tNameStyle as boolean,\n\t\tTitle as string,\n\t\tFirstName as string,\n\t\tMiddleName as string,\n\t\tLastName as string,\n\t\tSuffix as string,\n\t\tCompanyName as string,\n\t\tSalesPerson as string,\n\t\tEmailAddress as string,\n\t\tPhone as string,\n\t\tPasswordHash as string,\n\t\tPasswordSalt as string,\n\t\trowguid as string,\n\t\tModifiedDate as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> CSVClientes\nTabelaVendas select(mapColumn(\n\t\tVendas_SalesOrderID = SalesOrderID,\n\t\tVendas_OrderDate = OrderDate,\n\t\tVendas_ShipDate = ShipDate,\n\t\tVendas_SalesOrderNumber = SalesOrderNumber,\n\t\tVendas_PurchaseOrderNumber = PurchaseOrderNumber,\n\t\tVendas_CustomerID = CustomerID,\n\t\tVendas_BillToAddressID = BillToAddressID,\n\t\tVendas_TaxAmt = TaxAmt,\n\t\tVendas_Freight = Freight,\n\t\tVendas_TotalDue = TotalDue\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectColunasVendas\nCSVClientes select(mapColumn(\n\t\tClientes_CustomerID = CustomerID,\n\t\tClientes_NameStyle = NameStyle,\n\t\tClientes_Title = Title,\n\t\tClientes_FirstName = FirstName,\n\t\tClientes_MiddleName = MiddleName,\n\t\tClientes_LastName = LastName,\n\t\tClientes_CompanyName = CompanyName\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectColunasClientes\nSelectColunasVendas, SelectColunasClientes join(Vendas_CustomerID == Clientes_CustomerID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinVendasClientes\nJoinVendasClientes derive(nomeCompleto = concat(Clientes_FirstName, ' ' ,Clientes_LastName)) ~> AjusteNomeCompleto\nAjusteNomeCompleto aggregate(groupBy(Clientes_CustomerID,\n\t\tnomeCompleto),\n\tSomaVendas = sum(Vendas_TotalDue)) ~> TotalPedidosPorCLiente\nTotalPedidosPorCLiente split(SomaVendas >= 5000,\n\tdisjoint: false) ~> CondicaoVenda@(ParquetOutput, BDOutput)\nCondicaoVenda@ParquetOutput sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'parquet',\n\tpartitionFileNames:['VendasBoas.parquet'],\n\tumask: 0022,\n\tpreCommands: [],\n\tpostCommands: [],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> SaidaParquet\nCondicaoVenda@BDOutput sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> SaidaBD"
+		}
+	}
+}

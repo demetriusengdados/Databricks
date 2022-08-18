@@ -1,0 +1,163 @@
+{
+	"name": "ACTIVITY_LOOKUP",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup CSV Singleton",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_generico_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"ContainerName": "raw",
+							"FileName": "cidades.csv",
+							"SeparatorFile": ";"
+						}
+					}
+				}
+			},
+			{
+				"name": "Lookup CSV Array",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Lookup CSV Singleton",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_generico_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"ContainerName": "raw",
+							"FileName": "cidades.csv",
+							"SeparatorFile": ";"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Lookup Queries Schema",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Lookup Query",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = 'SALESLT'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_generico_azuresql",
+						"type": "DatasetReference",
+						"parameters": {
+							"SchemaName": "*",
+							"TableName": "*"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Lookup Query",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Lookup CSV Array",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select * from salesLT.customer where middlename is not null",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_generico_azuresql",
+						"type": "DatasetReference",
+						"parameters": {
+							"SchemaName": "SalesLT",
+							"TableName": "Customer"
+						}
+					},
+					"firstRowOnly": false
+				}
+			}
+		],
+		"folder": {
+			"name": "01_pipelines"
+		},
+		"annotations": []
+	}
+}

@@ -1,0 +1,18 @@
+/*Valores das Key Vaults*/
+
+** conexão com um diretório local **
+Name = kvsenhausuariolocal
+Value = <pass>
+
+** conexão com um banco de dados local **
+Name = kvstringconnsqllocal
+Value = Server=<server>;Database=<database>;User Id=<user>;Password=<pass>;
+
+** conexão com um Azure SQL Database **
+Name = kvstringconnsqldatabase
+Value = 
+Server=tcp:<server>,1433;Initial Catalog=<database>;Persist Security Info=False;User ID=<user>;Password=<pass>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+
+** conexão com um azure data lake **
+Name = kvkeydatalake
+Value = <keydatalake>

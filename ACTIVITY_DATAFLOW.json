@@ -1,0 +1,56 @@
+{
+	"name": "ACTIVITY_DATAFLOW",
+	"properties": {
+		"activities": [
+			{
+				"name": "DATAFLOW_ETL_JOIN_CLIENTES_PEDIDOS",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "ETL_JOIN_CLIENTES_PEDIDOS",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"TabelaVendas": {
+								"SchemaName": "SalesLT",
+								"TableName": "SalesOrderHeader"
+							},
+							"CSVClientes": {
+								"ContainerName": "raw",
+								"FileName": "Customer.csv",
+								"SeparatorFile": ";"
+							},
+							"SaidaParquet": {
+								"ContainerName": "trusted"
+							},
+							"SaidaBD": {
+								"SchemaName": "SalesLT",
+								"TableName": "VendasFracas"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "01_pipelines"
+		},
+		"annotations": []
+	}
+}

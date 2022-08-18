@@ -1,0 +1,64 @@
+{
+	"name": "ACTIVITY_PROCEDURE",
+	"properties": {
+		"activities": [
+			{
+				"name": "Stored procedure SEM PARAM",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[SalesLT].[proc_activity_adf01_in]"
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_sqldatabase",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Stored procedure COM PARAM",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Stored procedure SEM PARAM",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[SalesLT].[proc_activity_adf02_in]",
+					"storedProcedureParameters": {
+						"preco": {
+							"value": "50",
+							"type": "Decimal"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_sqldatabase",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "01_pipelines"
+		},
+		"annotations": []
+	}
+}

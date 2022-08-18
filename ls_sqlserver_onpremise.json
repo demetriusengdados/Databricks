@@ -1,0 +1,22 @@
+{
+	"name": "ls_sqlserver_onpremise",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "ls_keyvault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "kvstringconnsqllocal"
+			}
+		},
+		"connectVia": {
+			"referenceName": "ir-selfhosted-deskafonso",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

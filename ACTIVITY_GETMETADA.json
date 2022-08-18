@@ -1,0 +1,131 @@
+{
+	"name": "ACTIVITY_GETMETADA",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata File",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_generico_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"ContainerName": "raw",
+							"FileName": "cidades.csv",
+							"SeparatorFile": ";"
+						}
+					},
+					"fieldList": [
+						"structure",
+						"lastModified",
+						"size"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Get Metadata Folder",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata File",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_generico_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"ContainerName": "raw",
+							"FileName": {
+								"value": "@tolower('')",
+								"type": "Expression"
+							},
+							"SeparatorFile": {
+								"value": "@tolower('')",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"itemType",
+						"itemName",
+						"lastModified",
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Get Metadata Table",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata Folder",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ds_generico_azuresql",
+						"type": "DatasetReference",
+						"parameters": {
+							"SchemaName": "SalesLT",
+							"TableName": "Customer"
+						}
+					},
+					"fieldList": [
+						"columnCount",
+						"structure"
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "01_pipelines"
+		},
+		"annotations": []
+	}
+}

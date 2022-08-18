@@ -1,0 +1,12 @@
+{
+	"name": "ls_keyvault",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "Key vault da turma de imersão",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://akv-turma01imersaoafonso.vault.azure.net/"
+		}
+	}
+}
